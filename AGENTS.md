@@ -57,3 +57,13 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - Use the `providedIn: 'root'` option for singleton services
 - Prefer the `@Service` decorator over `@Injectable({providedIn: 'root'})` for new singleton services (Angular v22+)
 - Use the `inject()` function instead of constructor injection
+
+## SOLID Principles
+
+- Apply SOLID principles when designing components, services, domain types, and APIs.
+- **Single Responsibility:** Give each unit one clear responsibility and one main reason to change.
+- **Open/Closed:** Prefer extending behavior through composition or configuration when a real extension need exists; avoid speculative abstractions.
+- **Liskov Substitution:** Ensure implementations and subtypes honor the behavior promised by their contracts; prefer composition over inheritance when it keeps behavior clearer.
+- **Interface Segregation:** Keep contracts focused on the needs of their consumers instead of creating broad interfaces with unrelated members.
+- **Dependency Inversion:** Keep high-level features independent of infrastructure details by depending on focused abstractions and using Angular dependency injection where appropriate.
+- Apply these principles proportionally. Explain the design choice and trade-offs during each learning increment, and avoid adding layers that do not solve a current or clearly anticipated problem.
