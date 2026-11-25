@@ -1,0 +1,46 @@
+<main>
+  <section aria-labelledby="featured-heading">
+    <h2 id="featured-heading">Featured books</h2>
+
+    <div class="search-field">
+      <label for="book-search">Search books by title or author</label>
+      <input
+        #searchBox
+        id="book-search"
+        type="search"
+        [value]="searchTerm()"
+        (input)="searchTerm.set(searchBox.value)"
+      />
+    </div>
+
+    <label class="favorites-filter">
+      <input
+        #favoritesOnlyCheckbox
+        type="checkbox"
+        [checked]="showFavoritesOnly()"
+        (change)="showFavoritesOnly.set(favoritesOnlyCheckbox.checked)"
+      />
+      Show favorites only
+    </label>
+
+    <div class="book-grid">
+      @for (book of filteredBooks(); track book.id) {
+        <app-book-card
+          [book]="book"
+          [isFavorite]="favoritesService.isFavorite(book.id)"
+          (favoriteToggled)="favoritesService.toggleFavorite($event)"
+        />
+      } @empty {
+        <p>No books match these filters. Try changing your search or favorites selection.</p>
+      }
+    </div>
+  </section>
+
+  <div aria-live="polite" aria-atomic="true">
+    @if (favoritesService.favoriteCount() === 0) {
+      <p>No favorite books yet. Choose one above to save it.</p>
+    } @else {
+      <p>Favorites selected: {{ favoritesService.favoriteCount() }}</p>
+    }
+  </div>
+</main>

@@ -67,3 +67,12 @@ You are an expert in TypeScript, Angular, and scalable web application developme
 - **Interface Segregation:** Keep contracts focused on the needs of their consumers instead of creating broad interfaces with unrelated members.
 - **Dependency Inversion:** Keep high-level features independent of infrastructure details by depending on focused abstractions and using Angular dependency injection where appropriate.
 - Apply these principles proportionally. Explain the design choice and trade-offs during each learning increment, and avoid adding layers that do not solve a current or clearly anticipated problem.
+
+## Angular MCP Workflow
+
+- Use the Angular CLI MCP for Angular project work when it is available.
+- Begin project-specific work with `list_projects` and use the returned workspace path and project name.
+- Before writing or modifying Angular code, call `get_best_practices` for that workspace.
+- Use `search_documentation` for Angular API or concept questions.
+- Use the MCP's `run_target` or dev server tools when build or runtime verification is requested or needed for an authorized change; do not run tests unless asked.
+- Explain the Angular concept and interview framing in small learning increments. Do not hand the user multiple unrelated steps at once.

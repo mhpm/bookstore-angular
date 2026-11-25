@@ -1,9 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
-import type { Book } from './book.model';
-import { FavoritesService } from './favorites.service';
+import { Component, computed, inject, signal } from '@angular/core';
+import type { Book } from './books/book.model';
+import { FavoritesService } from './favorites/favorites.service';
+import { BookCard } from './books/book-card';
+import { BookCatalogService } from './books/book-catalog.service';
 
 @Component({
   selector: 'app-root',
+  imports: [BookCard],
   styleUrl: './app.css',
   templateUrl: './app.html',
 })
@@ -11,16 +14,20 @@ export class App {
   protected readonly favoritesService = inject(FavoritesService);
   protected readonly title = signal('Chapter & Co.');
 
-  protected readonly books = signal<Book[]>([
-    {
-      id: '1',
-      title: 'The Midnight Library',
-      author: 'Matt Haig',
-    },
-    {
-      id: '2',
-      title: 'The House in the Cerulean Sea',
-      author: 'TJ Klune',
-    },
-  ]);
+  protected readonly searchTerm = signal('');
+  protected readonly showFavoritesOnly = signal(false);
+  protected readonly bookCatalog = inject(BookCatalogService);
+
+  protected readonly filteredBooks = computed(() => {
+    const query = this.searchTerm().trim().toLowerCase();
+    const favoritesOnly = this.showFavoritesOnly();
+
+    return this.bookCatalog.books().filter((book) => {
+      const matchesSearch = `${book.title} ${book.author}`.toLowerCase().includes(query);
+
+      const matchesFavorite = !favoritesOnly || this.favoritesService.isFavorite(book.id);
+
+      return matchesSearch && matchesFavorite;
+    });
+  });
 }

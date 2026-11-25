@@ -5,23 +5,36 @@
 </header>
 <main>
   <section aria-labelledby="featured-heading">
-    <h2 id="featured-heading">Featured book</h2>
-    @for (book of books(); track book.id) {
-      <article>
-        <h3>{{ book.title }}</h3>
-        <p>{{ book.author }}</p>
-        <button
-          type="button"
-          [attr.aria-pressed]="favoritesService.isFavorite(book.id)"
-          (click)="favoritesService.toggleFavorite(book.id)"
-        >
-          {{
-            favoritesService.isFavorite(book.id)
-              ? '❤️ Remove from favorites: '
-              : '🤍 Add to favorites: '
-          }}{{ book.title }}
-        </button>
-      </article>
+    <h2 id="featured-heading">Featured books</h2>
+
+    <div class="search-field">
+      <label for="book-search">Search books by title or author</label>
+      <input
+        #searchBox
+        id="book-search"
+        type="search"
+        [value]="searchTerm()"
+        (input)="searchTerm.set(searchBox.value)"
+      />
+    </div>
+    <label class="favorites-filter">
+      <input
+        #favoritesOnlyCheckbox
+        type="checkbox"
+        [checked]="showFavoritesOnly()"
+        (change)="showFavoritesOnly.set(favoritesOnlyCheckbox.checked)"
+      />
+      Show favorites only
+    </label>
+
+    @for (book of filteredBooks(); track book.id) {
+      <app-book-card
+        [book]="book"
+        [isFavorite]="favoritesService.isFavorite(book.id)"
+        (favoriteToggled)="favoritesService.toggleFavorite($event)"
+      />
+    } @empty {
+      <p>No books match these filters. Try changing your search or favorites selection.</p>
     }
   </section>
   <div aria-live="polite" aria-atomic="true">

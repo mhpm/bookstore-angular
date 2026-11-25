@@ -197,3 +197,80 @@ This guide collects the concepts we introduce while building the bookstore. Each
 **SOLID connection:** This supports Single Responsibility: the card renders one book, while the page coordinates the catalog and service. It also supports Interface Segregation by keeping the child API limited to the data and event it needs.
 
 **Interview explanation:** “I use signal inputs to pass data into a focused child component and outputs to report user intent to its parent. That keeps ownership clear and component responsibilities cohesive.”
+
+## 24. Feature-based folder structure
+
+**Meaning:** Feature-based organization groups files by the product capability they support, rather than putting every component, service, and model into separate global folders.
+
+**In this project:** `books/` will contain book-specific UI and types; `favorites/` will contain favorites behavior. The root `app.*` files remain the application shell.
+
+**SOLID connection:** Clear feature boundaries help keep related responsibilities together and make dependencies easier to follow. Folders should reflect actual features and grow when the code needs them; avoid creating empty layers for hypothetical future code.
+
+**Interview explanation:** “I organize application code around cohesive features so related UI, types, and behavior are easy to find. I keep the structure proportional to the current application instead of creating speculative layers.”
+
+## 25. Signals, computed state, and filtering
+
+**Meaning:** A signal stores reactive state. `computed()` derives a value from other signals and recalculates when its dependencies change. Derived state should be calculated from its source rather than stored as a second, manually synchronized copy.
+
+**In this project:** `searchTerm` stores what the user types; `filteredBooks` derives the visible books from `books` and `searchTerm`. The source catalog remains unchanged while searching.
+
+**Interview explanation:** “I use signals for mutable local state and computed signals for values derived from that state. This avoids synchronization bugs and lets Angular update consumers when a dependency changes.”
+
+**Multiple reactive dependencies:** A `computed()` value can read more than one signal. Angular tracks the signals read during its latest evaluation and recalculates the derived value when one of those dependencies changes. This supports combinations such as search text, a favorites-only option, and favorite state without storing a duplicate filtered list.
+
+**Interview explanation:** “Computed signals can depend on several pieces of state. Angular tracks those dependencies, so I can derive a view from search and filter settings without manually coordinating updates.”
+
+## 26. AI learning goals for the bookstore
+
+These topics are part of the learning roadmap, after the core Angular and backend foundations. We will add them incrementally and explain each new term and its interview framing when we reach it.
+
+### Proposed learning sequence
+
+1. **Chatbot with an LLM:** Build a book-discovery assistant. Angular provides the chat interface; a NestJS API owns prompts, calls the LLM provider, validates requests, and keeps provider credentials off the browser. Persist conversations and messages with Prisma/PostgreSQL when we introduce persistence. Add streaming with Server-Sent Events (SSE) as a separate increment.
+2. **AI tool calling and agents:** Let the assistant call a small, allowlisted set of bookstore use cases, such as searching the catalog or retrieving book details. NestJS validates tool arguments and applies the same authorization and business rules as other API requests. Start with a straightforward workflow; consider an agent framework such as LangGraph only if branching, retries, state, and human approval become real requirements.
+3. **RAG and semantic search:** Ground answers in bookstore-owned information, initially catalog descriptions and curated FAQs. Store embeddings and searchable text in PostgreSQL with `pgvector`; retrieve relevant passages and pass them to the model as context. Continue to use regular SQL filters for exact needs such as price, author, category, and availability; semantic retrieval complements those queries rather than replacing them.
+4. **Production AI:** Add automated quality evaluations, privacy-conscious logging, error monitoring, rate and token limits, cost tracking, input/output validation, prompt-injection defenses, timeouts, retries, and fallback behavior. Test tool authorization and data boundaries as well as answer quality.
+
+### Architecture principle
+
+The Angular app talks only to our NestJS API. The API owns LLM provider credentials, prompt orchestration, input validation, authorization, rate limits, and persistence. Keep provider-specific calls behind a focused service/adapter so bookstore use cases do not depend directly on one vendor SDK. Use PostgreSQL/Prisma for conversations and catalog data; add `pgvector` when semantic retrieval is introduced. Never put a provider secret in Angular code.
+
+### SOLID and scope
+
+Keep the chat UI, conversation use case, provider adapter, catalog tools, and retrieval logic as separate responsibilities when each exists. Depend on narrow contracts at genuine boundaries; do not create an agent framework, vector database abstraction, or extra layers before the project needs them. For product search, exact catalog constraints stay in the regular database query; semantic search is for meaning-based discovery and grounded answers.
+
+**Interview explanation:** “I put LLM access behind the backend so credentials, authorization, validation, and cost controls stay server-side. I separate provider integration from application use cases, use retrieval to ground answers in owned data, and add agent tools only as narrowly authorized operations. I evaluate quality and operational behavior before calling the feature production-ready.”
+
+## 27. Filtering books by search text and favorite state
+
+**Where favorite state lives:** `FavoritesService` stores favorite book IDs in the private `favoriteBookIds` signal. `isFavorite(bookId)` checks whether that ID is in the signal's array with `includes()`. The filter does not infer favorites from a book's title or author; it asks the service using each book's unique ID.
+
+**How the filter works:** `books().filter(...)` examines each book and keeps it only when both `matchesSearch` and `matchesFavorite` are true. An empty search query matches every title and author because every string includes an empty string. `favoritesOnly` determines whether to require a favorite match.
+
+**Boolean short-circuiting:** `!favoritesOnly || isFavorite(...)` means “if the favorites-only option is off, allow this book; otherwise, check the service.” The `||` operator skips its right side when the left side is already true. `matchesSearch && matchesFavorite` means both conditions must pass.
+
+**Interview explanation:** “The favorites service is the source of truth. The view derives a filtered list by checking each book's ID against that state and combining the result with the search condition.”
+
+**Pure computed state:** A `computed()` should derive and return a value without changing state or performing side effects. Angular may reevaluate it when dependencies change, and callbacks inside `filter()` execute once per book each time. Debug logging can therefore repeat many times; remove it from the finished computation.
+
+**Interview explanation:** “I keep computed signals pure: they derive values from reactive inputs and do not perform side effects. That makes recalculation predictable and avoids repeated external behavior.”
+
+## 28. Catalog service and state ownership
+
+**Meaning:** A feature service owns reusable feature data or behavior; a component owns view-specific state and coordination. A readonly signal lets consumers observe service state without directly changing it. `asReadonly()` exposes a read-only signal while the service retains the writable signal internally.
+
+**In this project:** `BookCatalogService` owns the catalog list. `App` injects the service and derives visible books from that list, the search term, and the favorites-only setting. Later, the service can load catalog data from the backend without placing the data source in the page component.
+
+**SOLID connection:** This gives the catalog and page separate responsibilities. The component depends on a focused service through Angular DI. Keep this concrete service simple until there is a real need for a separate repository or provider abstraction.
+
+**Interview explanation:** “I move feature data access out of a page component into a focused injected service. The component coordinates the view, while the service owns the catalog source; I expose only the read access consumers need.”
+
+## 29. Angular routes, router outlet, and lazy loading
+
+**Meaning:** A route maps a URL path to the component that represents that page. `<router-outlet>` is the placeholder where Angular renders the component selected for the current URL. `loadComponent` uses a dynamic import to load a standalone page component when its route is activated; Angular can place that code in a separate bundle.
+
+**In this project:** The root `App` remains the site shell and renders `<router-outlet>`. The books page becomes a feature component and the empty path (`''`) loads it with `loadComponent`.
+
+**Performance trade-off:** Lazy loading reduces the initial JavaScript bundle for features users have not opened, but it introduces a request when the route is visited. For a tiny bookstore with only one page this is mainly an architecture and learning exercise; it becomes more valuable as distinct feature areas grow.
+
+**Interview explanation:** “I use the Angular Router to map URLs to page components and place the active page in a router outlet. I lazy-load larger feature routes with `loadComponent` so their code is fetched when needed, while considering the extra navigation request and feature size.”

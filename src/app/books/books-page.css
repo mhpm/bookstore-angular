@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+main {
+  width: min(100%, 70rem);
+  margin-inline: auto;
+  padding-block: 3rem;
+}
+
+section {
+  display: grid;
+  gap: 1.25rem;
+}
+
+h2 {
+  margin: 0 0 0.5rem;
+  color: #214e44;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1.25rem;
+}
+
+.book-grid > p {
+  grid-column: 1 / -1;
+}
+
+.search-field {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 34rem;
+  font-family: Arial, sans-serif;
+}
+
+.search-field label {
+  font-weight: 700;
+}
+
+.search-field input {
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #514b42;
+  border-radius: 0.5rem;
+  background: #fffdf9;
+  color: #28251f;
+  font: inherit;
+}
+
+.search-field input:focus-visible {
+  outline: 3px solid #9a4d00;
+  outline-offset: 3px;
+}
+
+.favorites-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: Arial, sans-serif;
+}
+
+.favorites-filter input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: #214e44;
+}
+
+@media (max-width: 40rem) {
+  main {
+    padding-block: 2rem;
+  }
+}
