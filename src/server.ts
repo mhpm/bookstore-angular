@@ -7,8 +7,6 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 
-import { booksRouter } from './api/books.routes';
-
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
@@ -17,7 +15,6 @@ const angularApp = new AngularNodeAppEngine();
 /**
  * Serve static files from /browser
  */
-app.use('/api/books', booksRouter);
 
 app.use(
   express.static(browserDistFolder, {
