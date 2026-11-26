@@ -618,16 +618,16 @@ From here on we build the REST API with .NET. Angular concepts you already know 
 
 ## 58. Anatomy of an ASP.NET Core Web API project
 
-**Meaning:** A .NET solution is a container for one or more projects. Our layout is `api/Bookstore.slnx` (the solution; `.slnx` is the newer, readable XML format) and `api/Bookstore.Api/` (the web project).
+**Meaning:** A .NET solution is a container for one or more projects. Our layout is a `backend/` folder next to the Angular `bookstore/` folder: `backend/Bookstore.slnx` (the solution; `.slnx` is the newer, readable XML format) and `backend/Bookstore.Api/` (the web project). Keeping frontend and backend in sibling folders gives each its own tooling, dependencies, and (optionally) its own Git repository; they only meet over HTTP.
 
 **The important files:**
 - `Bookstore.Api.csproj`: the project definition. `TargetFramework` says which .NET version to build for (`net11.0`); `Nullable` turns on null-safety checks; `ImplicitUsings` adds common `using` lines automatically. Package references (like `Microsoft.AspNetCore.OpenApi`) are listed here, similar to `package.json` dependencies.
 - `Program.cs`: the entry point, where the app is configured and started.
 - `Properties/launchSettings.json`: how `dotnet run` starts the app locally (URL, environment). We pin `http://localhost:5100` so the Angular proxy always knows where the API is; the template would otherwise pick random ports.
 - `appsettings.json` and `appsettings.Development.json`: configuration, with environment-specific overrides. Never put secrets here.
-- `global.json` (in `api/`): pins which SDK version builds the project, so every machine uses the same one.
+- `global.json` (in `backend/`): pins which SDK version builds the project, so every machine uses the same one.
 - `Bookstore.Api.http`: saved requests you can run from VS Code or Visual Studio to try the API.
-- `bin/` and `obj/`: build output. They must not go into Git, so `api/.gitignore` (made with `dotnet new gitignore`) excludes them.
+- `bin/` and `obj/`: build output. They must not go into Git, so `backend/.gitignore` (made with `dotnet new gitignore`) excludes them.
 
 **Which .NET version?** .NET 11 is a *standard-term* (STS) release and .NET 10 is *long-term* (LTS), but both are supported until 2028-11-14, so we use the newest.
 
