@@ -1,13 +1,17 @@
-<main>
-  <section aria-labelledby="featured-heading">
-    <h2 id="featured-heading">Featured books</h2>
+<section aria-labelledby="books-heading">
+  <header class="page-header">
+    <h1 id="books-heading">Discover your next book</h1>
+    <p class="lede">Browse the collection and save the titles you love.</p>
+  </header>
 
+  <div class="toolbar">
     <div class="search-field">
-      <label for="book-search">Search books by title or author</label>
+      <label for="book-search">Search</label>
       <input
         #searchBox
         id="book-search"
         type="search"
+        placeholder="Title or author"
         [value]="searchTerm()"
         (input)="searchTerm.set(searchBox.value)"
       />
@@ -20,27 +24,48 @@
         [checked]="showFavoritesOnly()"
         (change)="showFavoritesOnly.set(favoritesOnlyCheckbox.checked)"
       />
-      Show favorites only
+      Favorites only
     </label>
-
-    <div class="book-grid">
-      @for (book of filteredBooks(); track book.id) {
-        <app-book-card
-          [book]="book"
-          [isFavorite]="favoritesService.isFavorite(book.id)"
-          (favoriteToggled)="favoritesService.toggleFavorite($event)"
-        />
-      } @empty {
-        <p>No books match these filters. Try changing your search or favorites selection.</p>
-      }
-    </div>
-  </section>
-
-  <div aria-live="polite" aria-atomic="true">
-    @if (favoritesService.favoriteCount() === 0) {
-      <p>No favorite books yet. Choose one above to save it.</p>
-    } @else {
-      <p>Favorites selected: {{ favoritesService.favoriteCount() }}</p>
-    }
   </div>
-</main>
+
+  <p class="results-status" role="status">
+    @if (bookCatalog.isLoading()) {
+      Loading books…
+    } @else if (!bookCatalog.hasError()) {
+      Showing {{ filteredBooks().length }} of {{ bookCatalog.books().length }} books · Favorites:
+      {{ favoritesService.favoriteCount() }}
+    }
+  </p>
+
+  @if (bookCatalog.isLoading()) {
+    <ul class="book-grid" aria-hidden="true">
+      @for (item of skeletonItems; track item) {
+        <li class="skeleton"></li>
+      }
+    </ul>
+  } @else if (bookCatalog.hasError()) {
+    <div class="empty-state" role="alert">
+      <p class="empty-title">Something went wrong</p>
+      <p>We could not load the catalog. Check your connection and try again.</p>
+      <button type="button" class="retry-button" (click)="bookCatalog.reload()">Try again</button>
+    </div>
+  } @else if (filteredBooks().length > 0) {
+    <ul class="book-grid" role="list">
+      @for (book of filteredBooks(); track book.id; let index = $index) {
+        <li>
+          <app-book-card
+            [book]="book"
+            [priority]="index < 4"
+            [isFavorite]="favoritesService.isFavorite(book.id)"
+            (favoriteToggled)="favoritesService.toggleFavorite($event)"
+          />
+        </li>
+      }
+    </ul>
+  } @else {
+    <div class="empty-state">
+      <p class="empty-title">No books match your filters</p>
+      <p>Try a different search or turn off “Favorites only”.</p>
+    </div>
+  }
+</section>

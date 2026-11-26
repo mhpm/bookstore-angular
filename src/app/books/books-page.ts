@@ -15,6 +15,9 @@ export class BooksPage {
   protected readonly searchTerm = signal('');
   protected readonly showFavoritesOnly = signal(false);
 
+  // Placeholder items shown while the catalog is loading.
+  protected readonly skeletonItems = [1, 2, 3, 4, 5, 6, 7, 8];
+
   protected readonly filteredBooks = computed(() => {
     const query = this.searchTerm().trim().toLowerCase();
     const favoritesOnly = this.showFavoritesOnly();

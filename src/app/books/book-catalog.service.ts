@@ -1,85 +1,22 @@
-import { Service, signal } from '@angular/core';
+import { httpResource } from '@angular/common/http';
+import { computed, Service } from '@angular/core';
 import type { Book } from './book.model';
 
 @Service()
 export class BookCatalogService {
-  private readonly bookList = signal<Book[]>([
-    {
-      id: '1',
-      title: 'The Midnight Library',
-      author: 'Matt Haig',
-    },
-    {
-      id: '2',
-      title: 'The House in the Cerulean Sea',
-      author: 'TJ Klune',
-    },
-    {
-      id: '3',
-      title: 'Project Hail Mary',
-      author: 'Andy Weir',
-    },
-    {
-      id: '4',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '5',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '6',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '7',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '8',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '9',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '10',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '11',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '12',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '13',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '14',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-    {
-      id: '15',
-      title: 'The Martian',
-      author: 'Andy Weir',
-    },
-  ]);
+  // Starts the GET request as soon as the service is created.
+  private readonly catalog = httpResource<Book[]>(() => '/api/books');
 
-  readonly books = this.bookList.asReadonly();
+  // `value()` throws when the request failed, so we only read it when `hasValue()` is true.
+  readonly books = computed(() => (this.catalog.hasValue() ? this.catalog.value() : []));
+  readonly isLoading = this.catalog.isLoading;
+  readonly hasError = computed(() => this.catalog.error() !== undefined);
+
+  reload(): void {
+    this.catalog.reload();
+  }
+
+  findById(id: string): Book | undefined {
+    return this.books().find((book) => book.id === id);
+  }
 }
